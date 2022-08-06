@@ -69,3 +69,22 @@ def cardinal_clearance(self, v_idx):
 
 def clearance(self, v_idx):
     return cardinal_clearance(self, v_idx) + diagonal_clearance(self, v_idx)
+
+def is_valid_neighbor(self, idx):
+    inside_grid = not ((idx[0] < 0 or idx[1] < 0) or (idx[0] > int(self.info["width"])-1 or idx[1] > int(self.info["height"])-1))        
+    is_walkable = False
+    
+    if inside_grid: is_walkable = self.vertexes[idx[0]][idx[1]].walkable
+    return inside_grid and is_walkable 
+
+def get_neighbors(self, vertex):
+    neighbors = []
+    x = vertex.position[0]
+    y = vertex.position[1]
+    
+    for i in range(-1, 2):
+        for j in range(-1, 2):
+            if is_valid_neighbor(self, (x+i, y+j)) and not (i == j == 0):
+                neighbors.append(self.vertexes[x+i][y+j])  
+
+    return neighbors

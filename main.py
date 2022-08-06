@@ -10,6 +10,7 @@ def main():
     start = (0,0)
     goal  = (1020, 1020)
     test_name = f"A* {start} -> {goal}"
+    metr.reset_info()
     metr.start_counting_time()
     print(f"[{test_name}] started counting time...")
     

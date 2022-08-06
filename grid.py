@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
+import utils
 from edge import Edge
-from utils import clearance
 
 from vertex import Vertex
 
@@ -15,22 +15,29 @@ class Grid():
         self.map_path = map_path
         print("[info] Creating map...")
         self.read_map()
-        self.reset_map_vertexes()
+        self.create_map_vertexes()
+        self.create_edges()
         print("[info] Map created.")
         self.metrics.show_metrics_map()
 
     def is_coord_valid(self, x, y):
         return (x >= 0 and y >= 0 and x < int(self.info["width"]) and y < int(self.info["height"])) 
 
+    def create_edges(self):
+        for row in self.vertexes:
+            for v in row:
+                for neighbor in utils.get_neighbors(self, v):
+                    v.edges.append(Edge(v, neighbor))
+
     def create_visibility_graph(self, subgoals):
         print("[info] Creating visibility graph...")
         self.metrics.start_counting_time()
 
         for sg in subgoals:
-            h_reachable = clearance(self, sg.position)
+            h_reachable = utils.clearance(self, sg.position)
             for h in h_reachable:
                 self.visibility_graph.append(Edge(sg, h))
-        
+
         self.metrics.end_counting_time()
         self.metrics.map_creation_info["vis_graph_time"] = str(self.metrics.time_elapsed) + " s"
         print(f"[info] Visibility graph created. Size: {len(self.visibility_graph)}")
@@ -45,7 +52,12 @@ class Grid():
                         return True
         return False
 
-    def reset_map_vertexes(self, reset_vis_graph=False):
+    def reset_vertexes(self):
+        for row in self.vertexes:
+            for v in row:
+                v.reset()
+
+    def create_map_vertexes(self):
         self.vertexes = []
         corners = []
         for i in range(0, len(self.coords)):
@@ -54,16 +66,12 @@ class Grid():
                 walkable = True if self.coords[i][j] == 1 else False
                 v = Vertex(self.coords[i][j], (i,j), walkable)
                 
-                if walkable and reset_vis_graph and self.is_convex_corner((i,j)):
+                if walkable and self.is_convex_corner((i,j)):
                     v.is_corner = True
                     corners.append(v)
                 
                 aux.append(v)    
             self.vertexes.append(aux)
-        
-        if reset_vis_graph:
-            self.create_visibility_graph(corners)
-            print(f"[info] Corners count: {len(corners)}")
             
     def read_map(self):
         lines = []        
