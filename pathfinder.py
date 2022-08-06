@@ -1,5 +1,8 @@
-from utils import distance_between
+from turtle import clear
+from edge import Edge
+from utils import distance_between, clearance
 from queue import PriorityQueue
+import heapq
 
 class Pathfinder():
     def __init__(self, grid, metrics):
@@ -43,17 +46,14 @@ class Pathfinder():
             print("[error] Invalid coordinates.")
             return
 
-        test_name = f"A* {start} -> {goal}"
-        self.metrics.start_counting_time()
-        print(f"[{test_name}] started counting time...")
-
         closed_nodes = set()
-        open_nodes = PriorityQueue(int(self.grid.info["width"]) * int(self.grid.info["height"]))
-        open_nodes.put(start_vertex)
+        open_nodes = [start_vertex]
+        heapq.heapify(open_nodes)
         self.metrics.info["open_nodes"] += 1
 
         while True:
-            current = open_nodes.get()
+            current = heapq.heappop(open_nodes)
+            current.is_closed = True
             closed_nodes.add(current)
             
             if current.position == goal:
@@ -89,8 +89,6 @@ class Pathfinder():
                     continue
                 
                 neighbor_g_cost = self.calculate_g(neighbor, current)
-            
-                # is_not_open = neighbor not in open_nodes
                 is_not_open = not neighbor.is_open
 
                 if is_not_open or neighbor_g_cost < neighbor.g:
@@ -100,35 +98,66 @@ class Pathfinder():
                     
                     if is_not_open:
                         neighbor.is_open = True
-                        open_nodes.put(neighbor)
+                        heapq.heappush(open_nodes, neighbor)
                         self.metrics.info["open_nodes"] += 1
+
+    def get_nearest_reachable_vertex(self, vertex):
+        h_reachable = clearance(self.grid, vertex.position)
+        min = distance_between(vertex, h_reachable[0])
+        ans = None
+        for h in h_reachable:
+            dist = distance_between(vertex, h)
+            if dist < min:
+                ans = h
+                min = dist
         
-        self.metrics.end_counting_time()
-        self.metrics.info["elapsed_time"] = str(self.metrics.time_elapsed) + " s"
-        print(f"[{test_name}] ended counting!")
-        print(f"Added test \"{test_name}\" to the log.")
-        self.metrics.log[test_name] = self.metrics.info
+        return ans
 
     def walk_ssg(self, start, goal):
         self.metrics.reset_info()
         self.goal = goal
         start_vertex = self.grid.vertexes[start[0]][start[1]]
         goal_vertex = self.grid.vertexes[goal[0]][goal[1]]
+        vis_graph = self.grid.visibility_graph
+        
+        srt_edge = Edge(start_vertex, self.get_nearest_reachable_vertex(start_vertex))
+        end_edge = Edge(goal_vertex, self.get_nearest_reachable_vertex(goal_vertex))
+        vis_graph.insert(0, srt_edge)
+        vis_graph.append(end_edge)
         
         if start_vertex.value != 1 or goal_vertex.value != 1:
             print("[error] Invalid coordinates.")
             return
 
-        test_name = f"SSG {start} -> {goal}"
-        self.metrics.start_counting_time()
-        print(f"[{test_name}] started counting time...")
-
-        closed_nodes = set()
-        open_nodes = PriorityQueue(int(self.grid.info["width"]) * int(self.grid.info["height"]))
-        open_nodes.put(start_vertex)
+        open_edges = [start_vertex]
+        heapq.heapify(open_edges)
+        closed_edges = set()
         self.metrics.info["open_nodes"] += 1
-        pass
 
+        while True:
+            current = heapq.heappop(open_edges)
+            closed_edges.add(current)
+
+            if current.target.position == goal:
+                print("cum") 
+            
+            neighbor_list = self.get_neighbors(current)       
+            for neighbor in neighbor_list:
+                if neighbor in closed_edges:
+                    continue
+                
+                neighbor_g_cost = self.calculate_g(neighbor, current)
+                is_not_open = not neighbor.is_open
+
+                if is_not_open or neighbor_g_cost < neighbor.g:
+                    neighbor.g = neighbor_g_cost
+                    neighbor.f = neighbor.get_f()
+                    neighbor.parent = current
+                    
+                    if is_not_open:
+                        neighbor.is_open = True
+                        heapq.heappush(open_edges, neighbor)
+                        self.metrics.info["open_nodes"] += 1
                 
 
 

@@ -9,9 +9,11 @@ class Vertex():
         self.is_path = False
         self.parent = None
         self.is_open = False
+        self.is_closed = False
         self.is_goal = False
         self.is_start = False
         self.is_corner = False
+        self.edges = []
         self.h = 0
         self.g = 0
         self.f = 0
@@ -22,6 +24,7 @@ class Vertex():
         self.is_open = False
         self.is_goal = False
         self.is_start = False
+        self.is_closed = False
         self.h = 0
         self.g = 0
         self.f = 0

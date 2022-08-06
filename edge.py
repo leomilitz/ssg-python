@@ -1,8 +1,18 @@
 from utils import distance_between
 
 class Edge():
-    def __init__(self, v1, v2):
-        self.v1 = v1
-        self.v2 = v2
-        self.value = distance_between(v1.position, v2.position)
+    def __init__(self, source, target):
+        self.source = source
+        self.target = target
+        self.value = distance_between(source.position, target.position)
     
+    # Averiguar se essa função está certa
+    def __lt__(self, other):
+        if (self.value == other.value):
+            return self 
+        
+        return self.value < other.value
+
+    def __eq__(self, other):
+        return (self.source.position == other.source.position and 
+                self.target.position == other.target.position)
