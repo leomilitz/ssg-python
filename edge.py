@@ -1,3 +1,6 @@
+"""
+Classe que guarda uma aresta entre um vértice origem e alvo.
+"""
 class Edge():
     def __init__(self, source, target):
         self.source = source

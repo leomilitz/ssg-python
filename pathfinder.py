@@ -1,10 +1,11 @@
-from turtle import clear
 from edge import Edge
-from queue import PriorityQueue
 import heapq
 import utils
 from vertex import Vertex
 
+"""
+Classe responsável pelo pathfinding. Ela faz tanto o SSG quanto o A* puro.
+"""
 class Pathfinder():
     def __init__(self, grid, metrics):
         self.grid = grid
@@ -12,12 +13,23 @@ class Pathfinder():
         self.goal_position = (0,0)
     
     def update_h(self, vertex):
+        """
+        Atualiza a heuristica h, que seria a distância do vértice até o objetivo.
+        """
         vertex.h = utils.distance_between(vertex.position, self.goal_position)
 
     def calculate_g(self, vertex, parent):
+        """
+        Calcula o g, que seria a distancia acumulada do caminho.
+        """
         return utils.distance_between(vertex.position, parent.position) + parent.g
 
     def ssg(self, start, goal):
+        """
+        Aqui é realizado clearance para buscar os subgoals H-reachable do inicio e
+        do objetivo, assim, criando uma aresta entre esses valores e adicionando aos
+        subgoals. Depois disso, é feito o A* no grafo de visibilidade.
+        """
         start_vertex = self.grid.vertexes[start[0]][start[1]] 
         start_vertex_copy = Vertex(start_vertex.value, start_vertex.position, start_vertex.walkable)
         start_vertex_copy.reset()
@@ -38,12 +50,22 @@ class Pathfinder():
         self.grid.subgoals[start] = start_vertex_copy
         self.grid.subgoals[goal]  = goal_vertex_copy
 
-        return self.a_star(self.grid.subgoals[start], self.grid.subgoals[goal])
+        result = self.a_star(self.grid.subgoals[start], self.grid.subgoals[goal])
+        
+        del self.grid.subgoals[start]
+        del self.grid.subgoals[goal]
+
+        return result
 
     def a_star(self, start, goal):
+        """
+        Implementação do A*. Cada vértice possui arestas para seus vizinhos válidos,
+        e A* percorre essas arestas.
+        """
         start.is_start = True
         self.goal_position = goal.position
-        
+        num_open = 0
+
         if start.value != 1 or goal.value != 1:
             print("[error] Invalid coordinates.")
             return
@@ -54,15 +76,17 @@ class Pathfinder():
 
         while True:
             if (len(open_nodes) == 0):
-                print("Goal not found")
                 return None
             
             current = heapq.heappop(open_nodes)
             current.is_closed = True
+            current.is_open = False
             closed_nodes.add(current)
             
             if current.position == goal.position:
                 current.is_goal = True
+                self.metrics.info["open_nodes"] = num_open
+                self.metrics.info["distance"]   = current.g
                 return current
             
             edges = current.edges  
@@ -82,6 +106,7 @@ class Pathfinder():
                     
                     if is_not_open:
                         connected.is_open = True
+                        num_open += 1
                         heapq.heappush(open_nodes, connected)
 
                 

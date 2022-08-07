@@ -1,10 +1,16 @@
 def distance_between(v1, v2):
+    """
+    Octile distance entre dois vértices.
+    """
     dist_x = abs(v2[0] - v1[0])
     dist_y = abs(v2[1] - v1[1])
     
     return (14 * min(dist_x, dist_y) + 10 * (abs(dist_x - dist_y)))
 
 def cast_line_y_clearance(self, vertex, direction, max_reach):
+    """
+    Uma linha que percorre o eixo Y em busca de um subgoal, parede, ou o fim do mapa.
+    """
     x, y = vertex[0], vertex[1]
     dist = 0
     while y >= 0 and y < max_reach:
@@ -19,6 +25,9 @@ def cast_line_y_clearance(self, vertex, direction, max_reach):
     return None, dist
 
 def cast_line_x_clearance(self, vertex, direction, max_reach):
+    """
+    Uma linha que percorre o eixo X em busca de um subgoal, parede, ou o fim do mapa.
+    """
     x, y = vertex[0], vertex[1]
     dist = 0
     while x >= 0 and x < max_reach:
@@ -32,6 +41,10 @@ def cast_line_x_clearance(self, vertex, direction, max_reach):
     return None, dist
 
 def diagonal_clearance(self, v_idx):
+    """
+    Uma linha que percorre a diagonal, e a cada passo, cria linhas verticais
+    e horizontais em busca de subgoals, paredes ou fim do mapa.
+    """
     h_reachable = []
     for inc_x in [-1, 1]:
         for inc_y in [-1, 1]:
@@ -52,21 +65,24 @@ def diagonal_clearance(self, v_idx):
                 
                 if self.vertexes[x][y].is_corner:
                     h_reachable.append(self.subgoals[(x,y)])
-                    break
-                
-                vertex, dist = cast_line_x_clearance(self, (x, y), inc_x, max_val_x)
-                if vertex != None and abs(vertex.position[0] - x) < max_val_x:
-                    h_reachable.append(vertex)
-                    max_val_x = abs(vertex.position[0] - x)
+                    return h_reachable
 
-                vertex, dist = cast_line_y_clearance(self, (x, y), inc_y, max_val_y)
-                if vertex != None and abs(vertex.position[1] - y) < max_val_y:
+                vertex, dist = cast_line_x_clearance(self, (x, y), inc_x, max_val_x)
+                if vertex != None and dist <= max_val_x:
                     h_reachable.append(vertex)
-                    max_val_y = abs(vertex.position[1] - y)
+                    max_val_x = dist - 1
+
+                vertex, dist = cast_line_y_clearance(self, (x, y), inc_y, max_val_y)      
+                if vertex != None and dist <= max_val_y:
+                    h_reachable.append(vertex)
+                    max_val_y = dist - 1 
                 
     return h_reachable
 
 def cardinal_clearance(self, v_idx):
+    """
+    Busca subgoals, paredes ou fim do mapa nos sentidos cardinais.
+    """
     x, y = v_idx[0], v_idx[1]
     h_reachable = []
     
@@ -80,11 +96,18 @@ def cardinal_clearance(self, v_idx):
     return h_reachable
 
 def clearance(self, v_idx):
+    """
+    Realiza o clearance geral e retorna os vértices H-reachable.
+    """
     c = cardinal_clearance(self, v_idx)
     d = diagonal_clearance(self, v_idx)
     return c + d
 
 def is_valid_neighbor(self, idx):
+    """
+    Verifica se é um vizinho válido. Ou seja, verifica se ele é um vértice válido,
+    não é uma parede, e não existem paredes que ele possa atravessar na diagonal.
+    """
     x, y = idx
     inside_grid = not ((x < 0 or y < 0) or (x > int(self.info["width"])-1 or y > int(self.info["height"])-1))        
     is_walkable = False
@@ -93,10 +116,16 @@ def is_valid_neighbor(self, idx):
     return inside_grid and is_walkable 
 
 def check_walls_around(self, idx, i, j):
+    """
+    Verifica se existem paredes na diagonal.
+    """
     x, y = idx
     return (self.vertexes[x + i][y].walkable == False) or (self.vertexes[x][y + j].walkable == False)
 
 def get_neighbors(self, vertex):
+    """
+    Busca uma lista de vizinhos válidos de um vértice.
+    """
     neighbors = []
     x = vertex.position[0]
     y = vertex.position[1]
