@@ -36,7 +36,6 @@ class Grid():
             h_reachable = utils.clearance(self, sg.position)
             for h in h_reachable:
                 sg.edges.append(Edge(sg, h))
-            print()
 
         self.metrics.end_counting_time()
         self.metrics.map_creation_info["vis_graph_time"] = str(self.metrics.time_elapsed) + " s"
