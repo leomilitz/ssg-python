@@ -34,10 +34,9 @@ class Grid():
 
         for sg in self.subgoals.values():
             h_reachable = utils.clearance(self, sg.position)
-            edgesAux = []
             for h in h_reachable:
-                edgesAux.append(Edge(sg, h))
-            sg.edges = edgesAux
+                sg.edges.append(Edge(sg, h))
+            print()
 
         self.metrics.end_counting_time()
         self.metrics.map_creation_info["vis_graph_time"] = str(self.metrics.time_elapsed) + " s"
@@ -93,7 +92,7 @@ class Grid():
                 new_line = line.replace("@", "0").replace(".", "1")
                 self.coords.append(np.asarray(list(new_line), dtype=np.uint8))
 
-    def draw_map(self):
+    def draw_map(self, node):
         print("[info] Drawing map...")
         plot_grid = []
         for vertex_line in self.vertexes:
@@ -102,7 +101,6 @@ class Grid():
                 color = [0, 0, 0]
                 if v.walkable:  color = [255, 255, 255]
                 if v.is_closed: color = [255,   0,   0]
-                if v.is_path:   color = [  0, 255,   0]
                 if v.is_start:  color = [255,   0,   0]
                 if v.is_goal:   color = [255, 255,   0]
                 if v.is_corner: color = [255,   0, 255] 
@@ -110,6 +108,12 @@ class Grid():
                 aux.append(color)
 
             plot_grid.append(aux)
+
+        while not node.is_start:
+            x_org, y_org   = node.position
+            x_dest, y_dest = node.parent.position
+            plt.plot([y_org, y_dest], [x_org, x_dest], "b-")
+            node = node.parent
 
         plt.imshow(plot_grid)
         plt.show()
