@@ -12,7 +12,7 @@ def cast_line_y_clearance(self, vertex, direction, max_reach):
             break
 
         if self.vertexes[x][y].is_corner:
-            return self.vertexes[x][y]
+            return self.subgoals[(x,y)]
     return None
 
 def cast_line_x_clearance(self, vertex, direction, max_reach):
@@ -23,7 +23,7 @@ def cast_line_x_clearance(self, vertex, direction, max_reach):
             break
 
         if self.vertexes[x][y].is_corner:
-            return self.vertexes[x][y]
+            return self.subgoals[(x,y)]
     
     return None
 
@@ -36,11 +36,14 @@ def diagonal_clearance(self, v_idx):
             while True:
                 x += inc_x
                 y += inc_y
-                if not self.is_coord_valid(x, y) or self.coords[x][y] == 0:
+                if not self.is_coord_valid(x, y): break
+                if self.coords[x][y] == 0: break
+
+                if check_walls_around(self, (x,y), -inc_x, -inc_y):
                     break
                 
                 if self.vertexes[x][y].is_corner:
-                    h_reachable.append(self.vertexes[x][y])
+                    h_reachable.append(self.subgoals[(x,y)])
                     break
                 
                 vertex = cast_line_x_clearance(self, (x, y), inc_x, max_val_x)
@@ -71,11 +74,16 @@ def clearance(self, v_idx):
     return cardinal_clearance(self, v_idx) + diagonal_clearance(self, v_idx)
 
 def is_valid_neighbor(self, idx):
-    inside_grid = not ((idx[0] < 0 or idx[1] < 0) or (idx[0] > int(self.info["width"])-1 or idx[1] > int(self.info["height"])-1))        
+    x, y = idx
+    inside_grid = not ((x < 0 or y < 0) or (x > int(self.info["width"])-1 or y > int(self.info["height"])-1))        
     is_walkable = False
     
-    if inside_grid: is_walkable = self.vertexes[idx[0]][idx[1]].walkable
+    if inside_grid: is_walkable = self.vertexes[x][y].walkable
     return inside_grid and is_walkable 
+
+def check_walls_around(self, idx, i, j):
+    x, y = idx
+    return (self.vertexes[x + i][y].walkable == False) and (self.vertexes[x][y + j].walkable == False)
 
 def get_neighbors(self, vertex):
     neighbors = []
@@ -85,6 +93,9 @@ def get_neighbors(self, vertex):
     for i in range(-1, 2):
         for j in range(-1, 2):
             if is_valid_neighbor(self, (x+i, y+j)) and not (i == j == 0):
-                neighbors.append(self.vertexes[x+i][y+j])  
+                if i != 0 and j != 0 and check_walls_around(self, (x,y), i, j):
+                    continue
+                neighbors.append(self.vertexes[x+i][y+j])
+                     
 
     return neighbors

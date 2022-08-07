@@ -11,14 +11,13 @@ class Grid():
         self.coords = []
         self.metrics = metrics
         self.vertexes = []
-        self.visibility_graph = []
+        self.subgoals = {}
         self.map_path = map_path
         print("[info] Creating map...")
         self.read_map()
         self.create_map_vertexes()
         self.create_edges()
         print("[info] Map created.")
-        self.metrics.show_metrics_map()
 
     def is_coord_valid(self, x, y):
         return (x >= 0 and y >= 0 and x < int(self.info["width"]) and y < int(self.info["height"])) 
@@ -29,18 +28,20 @@ class Grid():
                 for neighbor in utils.get_neighbors(self, v):
                     v.edges.append(Edge(v, neighbor))
 
-    def create_visibility_graph(self, subgoals):
+    def create_visibility_graph(self):
         print("[info] Creating visibility graph...")
         self.metrics.start_counting_time()
 
-        for sg in subgoals:
+        for sg in self.subgoals.values():
             h_reachable = utils.clearance(self, sg.position)
+            edgesAux = []
             for h in h_reachable:
-                self.visibility_graph.append(Edge(sg, h))
+                edgesAux.append(Edge(sg, h))
+            sg.edges = edgesAux
 
         self.metrics.end_counting_time()
         self.metrics.map_creation_info["vis_graph_time"] = str(self.metrics.time_elapsed) + " s"
-        print(f"[info] Visibility graph created. Size: {len(self.visibility_graph)}")
+        print(f"[info] Visibility graph created. Size: {len(self.subgoals)}")
 
     def is_convex_corner(self, v):
         x, y = v[0], v[1]
@@ -59,7 +60,6 @@ class Grid():
 
     def create_map_vertexes(self):
         self.vertexes = []
-        corners = []
         for i in range(0, len(self.coords)):
             aux = []
             for j in range(0, len(self.coords[i])):
@@ -68,7 +68,9 @@ class Grid():
                 
                 if walkable and self.is_convex_corner((i,j)):
                     v.is_corner = True
-                    corners.append(v)
+                    sg = Vertex(v.value, v.position, v.walkable)
+                    sg.is_corner = True
+                    self.subgoals[sg.position] = sg
                 
                 aux.append(v)    
             self.vertexes.append(aux)
