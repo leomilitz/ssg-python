@@ -4,7 +4,8 @@ from pathfinder import Pathfinder
 
 def main():
     metr = Metrics()
-    grid = Grid("Berlin_0_1024.map", metr)
+    #grid = Grid("Berlin_0_1024.map", metr)
+    grid = Grid("Denver_2_1024.map", metr)
     grid.create_visibility_graph()
     metr.show_metrics_map()
     pathfinder = Pathfinder(grid, metr)
