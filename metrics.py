@@ -15,7 +15,8 @@ class Metrics():
             "width:": 0.0,
             "height:": 0.0,
             "vis_graph_time": 0.0,
-            "vis_graph_size": 0
+            "vis_graph_size": 0,
+            "kind": ""
         }
         
         self.reset_info()
@@ -39,7 +40,7 @@ class Metrics():
     def show_metrics_alg(self, test_name):
         test = self.log[test_name]
         print(f"\n----------------- Metrics: {test_name} -----------------\n")
-        print(f"Elapsed Time:          {test['elapsed_time']}")
+        print(f"Elapsed Time:          {str(test['elapsed_time'])} s")
         print(f"Opened Nodes:          {test['open_nodes']}")
         print(f"Distance Traveled (g): {test['distance']}")
         print(f"\n---------------------------------------------" + len(test_name)*"-" + "\n")

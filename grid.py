@@ -84,6 +84,13 @@ class Grid():
             for v in row:
                 v.reset()
 
+    def reset_vis_graph_vertexes(self):
+        """
+        Reseta todos os vértices do grafo de visibilidade.
+        """
+        for sg in self.subgoals.values():
+            sg.reset()
+
     def create_map_vertexes(self):
         """
         Cria os vértices do mapa. Se o vértice for um canto convexo,

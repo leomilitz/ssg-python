@@ -1,3 +1,4 @@
+from sqlite3 import connect
 from edge import Edge
 import heapq
 import utils
