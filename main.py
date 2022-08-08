@@ -1,3 +1,4 @@
+from math import floor
 from grid import Grid
 from metrics import Metrics
 from pathfinder import Pathfinder
@@ -12,25 +13,35 @@ def create_valid_point(max_width, max_height, grid):
 def get_average_values_metrics(metr):
     print("[info] Calculating average values...")
     ssg_time = astar_time = 0.0
+    ssg_nodes = astar_nodes = 0
     ssg_count = astar_count = 0
     for test in metr.log.values():
         if test["kind"] == "ssg":
             ssg_time += test["elapsed_time"]
+            ssg_nodes += test["open_nodes"]
             ssg_count += 1
 
         if test["kind"] == "a*":
             astar_time += test["elapsed_time"]
+            astar_nodes += test["open_nodes"]
             astar_count += 1
 
-    avg_astar = astar_time / astar_count
-    avg_ssg = ssg_time / ssg_count
+    avg_time_astar = astar_time / astar_count
+    avg_time_ssg = ssg_time / ssg_count
+    avg_nodes_astar = astar_nodes / astar_count
+    avg_nodes_ssg = ssg_nodes / ssg_count
 
-    print("============================ RESUMO DOS RESULTADOS ============================")
-    print(f"Tempos médios de execução A*:  {avg_astar} s")
-    print(f"Tempos médios de execução SSG: {avg_ssg} s") 
-    print("-------------------------------------------------------------------------------")
-    rel = avg_astar/avg_ssg
-    print(f"SGG is {rel*100}% faster than pure A*.")
+    print("==================================== SUMMARY ====================================")
+    print(f"A* Average execution time:  {avg_time_astar} s")
+    print(f"SSG Average execution time: {avg_time_ssg} s")
+    print()
+    print(f"A* Average open nodes:  {avg_nodes_astar}")
+    print(f"SSG Average open nodes: {avg_nodes_ssg}")  
+    print("---------------------------------------------------------------------------------")
+    rel_time = avg_time_astar/avg_time_ssg
+    rel_nodes = avg_nodes_astar/avg_nodes_ssg
+    print(f"SGG is {rel_time*100}% on average faster than pure A*.")
+    print(f"A* haves {floor(rel_nodes)} times more open nodes on avarege than SSG.")
 
 def hundred_point_test(pathfinder, grid, metr, max_width, max_height):
     for i in range(0,100):
@@ -43,7 +54,6 @@ def hundred_point_test(pathfinder, grid, metr, max_width, max_height):
         grid.reset_vertexes()
     
     get_average_values_metrics(metr)
-        
 
 def do_ssg_only_test(start, goal, pathfinder, grid, metr):
     test_name = f"SSG {start} -> {goal}"
@@ -100,13 +110,15 @@ def main():
     metr.show_metrics_map()
     metr.show_metrics_vis_graph()
 
-    hundred_point_test(pathfinder, grid, metr, int(grid.info["width"]), int(grid.info["height"]))
+    # hundred_point_test(pathfinder, grid, metr, int(grid.info["width"]), int(grid.info["height"]))
 
-    #start = (0,0)
-    #goal  = (1020,1020)
-    #end_node = do_a_star_only_test(start, goal, pathfinder, grid, metr)
-    #end_node = do_ssg_only_test(start, goal, pathfinder, grid, metr)
-    #grid.draw_map(end_node)
+    start = (0,0)
+    goal  = (1020,1020)
+    end_node = do_a_star_only_test(start, goal, pathfinder, grid, metr)
+    grid.draw_map(end_node)
+    grid.reset_vertexes()
+    end_node = do_ssg_only_test(start, goal, pathfinder, grid, metr)
+    grid.draw_map(end_node)
 
 if __name__ == '__main__':
     main()
