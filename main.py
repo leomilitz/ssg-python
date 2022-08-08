@@ -70,13 +70,13 @@ def main():
     metr.show_metrics_map()
     metr.show_metrics_vis_graph()
 
-    hundred_point_test(pathfinder, grid, metr, int(grid.info["width"]), int(grid.info["height"]))
+    #hundred_point_test(pathfinder, grid, metr, int(grid.info["width"]), int(grid.info["height"]))
 
-    #start = (0,0)
-    #goal  = (1020,1020)
+    start = (0,0)
+    goal  = (1020,1020)
     #end_node = do_a_star_only_test(start, goal, pathfinder, grid, metr)
-    #end_node = do_ssg_only_test(start, goal, pathfinder, grid, metr)
-    #grid.draw_map(end_node)
+    end_node = do_ssg_only_test(start, goal, pathfinder, grid, metr)
+    grid.draw_map(end_node)
 
 if __name__ == '__main__':
     main()

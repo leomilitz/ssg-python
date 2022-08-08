@@ -1,6 +1,7 @@
-from filecmp import cmp
-
-
+"""
+Classe do vértice. Ele guarda alguns bools úteis para o A* e para
+printar no matplotlib o caminho realizado
+"""
 class Vertex():
     def __init__(self, value, position, walkable):
         self.value = value

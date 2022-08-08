@@ -80,7 +80,6 @@ class Pathfinder():
             
             current = heapq.heappop(open_nodes)
             current.is_closed = True
-            current.is_open = False
             closed_nodes.add(current)
             
             if current.position == goal.position:
